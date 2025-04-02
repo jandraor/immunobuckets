@@ -421,7 +421,7 @@ test_that("simulate_infections() works", {
                                 enrolment_weight, is_vac_prob, switch_rho,
                                 vac_year = 15)
 
-  expected <- c(1, 0, 0, 0, 1, 1, 1, 0, 0)
+  expected <- c(1, 0, 0, 0, 0, 1, 0, 0, 1)
 
   expect_equal(actual, expected)
 

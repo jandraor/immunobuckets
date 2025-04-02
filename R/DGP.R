@@ -58,7 +58,7 @@ sim_infection_seroneg <- function(follow_up_times,
     cml_lambda <- cml_lambda + weight * lambda[yr];
 
     # Vaccination occurs at the start of the period
-    if(is_vaccinated == 1 && yr > enrolment_year)
+    if(is_vaccinated == 1 && yr > enrolment_year && yr == vac_year)
     {
       n_filled_buckets_nat <- inf_counter
       n_filled_buckets_vac <- draw_vac_buckets(inf_counter, vac_buckets,
