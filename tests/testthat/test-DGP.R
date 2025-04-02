@@ -20,7 +20,8 @@ test_that("sim_infection_seroneg() works", {
                                   enrolment_weight   = enrolment_weight,
                                   rho                = 0.05,
                                   rho_v              = 0,
-                                  is_vaccinated      = 0)
+                                  is_vaccinated      = 0,
+                                  vac_year           = 15)
 
   expected <- c(0, 1, 0, 1, 1, 0, 0, 1, 0)
 
@@ -77,7 +78,8 @@ test_that("sim_infection_seropos() works", {
                                   rho                 = 0.05,
                                   rho_v               = 0.07,
                                   is_vaccinated       = 0,
-                                  is_vac_prob         = 0)
+                                  is_vac_prob         = 0,
+                                  vac_buckets         = 1)
 
   expected <- c(0, 1, 0, 0, 0, 0, 0, 0, 1)
 
@@ -86,22 +88,53 @@ test_that("sim_infection_seropos() works", {
 
 test_that("calculate_infection_probability() works", {
 
+  #-----------------------------------------------------------------------------
   total_buckets        <- 4
-  n_filled_buckets_nat <- c(0.680126, 1.680126, 2.680126, 3.680126)
-  lambda_period        <- 0.09635752
-  n_filled_buckets_vac <- 0
-  prob_n_inf_e         <- c(0.21863194, 0.38702796,
-                            0.30450087, 0.08983923)
+  n_filled_buckets_nat <- 1:4
+  lambda_period        <- 0.1
+  n_filled_buckets_vac <- c(0, 0)
+  prob_n_inf_e         <- c(0.2, 0.4, 0.1, 0.3)
 
-  actual   <- calculate_infection_probability(
+  actual <- calculate_infection_probability(
     total_buckets        = total_buckets,
     n_filled_buckets_nat = n_filled_buckets_nat,
     lambda_period        = lambda_period,
     n_filled_buckets_vac = n_filled_buckets_vac,
     prob_n_inf_e         = prob_n_inf_e,
-    is_vac_prob          = 0)
+    is_vac_prob          = 0,
+    vac_buckets          = 0)
 
-  expected <- 0.1764751
+  probability_infection <- function(empty_buckets, lambda) {
+    1 - exp(-empty_buckets * lambda)
+  }
+
+  expected <- sum(probability_infection(total_buckets - n_filled_buckets_nat,
+                                    lambda_period) * prob_n_inf_e)
+
+  expect_equal(actual, expected)
+
+  #-----------------------------------------------------------------------------
+
+  total_buckets        <- 4
+  n_filled_buckets_nat <- c(0.680126, 1.680126, 2.680126, 3.680126)
+  lambda_period        <- 0.09635752
+  n_filled_buckets_vac <- c(0, 1)
+  prob_n_inf_e         <- c(0.21863194, 0.38702796,
+                            0.30450087, 0.08983923)
+
+  actual <- calculate_infection_probability(
+    total_buckets        = total_buckets,
+    n_filled_buckets_nat = n_filled_buckets_nat,
+    lambda_period        = lambda_period,
+    n_filled_buckets_vac = n_filled_buckets_vac,
+    prob_n_inf_e         = prob_n_inf_e,
+    is_vac_prob          = 0,
+    vac_buckets          = 1)
+
+  expected <- 0.21863194 * 0.2003149 +
+    0.1194247 * 0.38702796 +
+    0.30450087 * 0.0303521 +
+    0.08983923* 0.0303521
 
   expect_equal(actual, expected, tolerance = 1e-6)
 })
@@ -113,7 +146,7 @@ test_that("calculate_infection_probability() returns a lower value when
   is_vac_prob          <- FALSE
   n_filled_buckets_nat <- c(1:4) # Assuming no-resusceptibility
   lambda_period        <- 0.1
-  n_filled_buckets_vac <- 1
+  n_filled_buckets_vac <- c(0, 1)
   prob_n_inf_e         <- c(0.21863194, 0.38702796,
                             0.30450087, 0.08983923)
 
@@ -122,7 +155,8 @@ test_that("calculate_infection_probability() returns a lower value when
                                            lambda_period,
                                            n_filled_buckets_vac,
                                            prob_n_inf_e,
-                                           is_vac_prob)
+                                           is_vac_prob,
+                                           vac_buckets = 1)
 
   is_vac_prob <- TRUE
 
@@ -131,9 +165,214 @@ test_that("calculate_infection_probability() returns a lower value when
                                           lambda_period,
                                           n_filled_buckets_vac,
                                           prob_n_inf_e,
-                                          is_vac_prob)
+                                          is_vac_prob,
+                                          vac_buckets = 1)
 
   expect_true(prob1 < prob)
+})
+
+test_that("calculate_infection_probability() works with 2 vac buckets", {
+
+  total_buckets        <- 4
+  is_vac_prob          <- TRUE
+  n_filled_buckets_nat <- c(1:4)
+  lambda_period        <- 0.1
+  n_filled_buckets_vac <- c(0, 1, 2) # Potential
+  prob_n_inf_e         <- c(0.21863194, 0.38702796,
+                            0.30450087, 0.08983923)
+
+  actual <- calculate_infection_probability(total_buckets,
+                                          n_filled_buckets_nat,
+                                          lambda_period,
+                                          n_filled_buckets_vac,
+                                          prob_n_inf_e,
+                                          is_vac_prob,
+                                          vac_buckets = 2)
+
+  expected <- 0.08819766
+
+  expect_equal(actual, expected, tolerance = 1e-6)
+})
+
+
+test_that("infection_probability_given_n_inf_e works", {
+
+  lambda_period <- 0.09635752
+
+  actual <- infection_probability_given_n_inf_e(
+    n_filled_buckets_nat = 0.680126,
+    n_filled_buckets_vac = c(0, 1),
+    lambda_period        = lambda_period,
+    total_buckets        = 4,
+    prob_sce             = c(0, 1))
+
+  expected <- 1 - exp(-lambda_period * (4 - 1.680126))
+
+  expect_equal(actual, expected)
+
+  actual <- infection_probability_given_n_inf_e(
+    n_filled_buckets_nat = 1.680126,
+    n_filled_buckets_vac = c(0, 1),
+    lambda_period        = lambda_period,
+    total_buckets        = 4,
+    prob_sce             = c(0, 1))
+
+  expected <- 1 - exp(-lambda_period *(4 - 2.680126))
+
+  expect_equal(actual, expected)
+
+  actual <- infection_probability_given_n_inf_e(
+    n_filled_buckets_nat = 2.680126,
+    n_filled_buckets_vac = c(0, 1),
+    lambda_period        = lambda_period,
+    total_buckets        = 4,
+    prob_sce             = c(0, 1))
+
+  expected <- 1 - exp(-lambda_period *(4 - 3.680126))
+
+  expect_equal(actual, expected)
+
+  actual <- infection_probability_given_n_inf_e(
+    n_filled_buckets_nat = 3.680126,
+    n_filled_buckets_vac = c(0, 1),
+    lambda_period        = lambda_period ,
+    total_buckets        = 4,
+    prob_sce             = c(0, 1))
+
+  expected <- 0
+
+  expect_equal(actual, expected)
+
+  #----------------------------------------------------------------------------
+  lambda_period <- 0.1
+  total_buckets <- 4
+
+  n_filled_buckets_nat <- 1
+  n_filled_buckets_vac <- c(0, 1)
+
+  prob_sce <- c(0.25, 0.75) # calculate_prob_per_scenario(1, 1, 4)
+
+  actual <- infection_probability_given_n_inf_e(n_filled_buckets_nat,
+                      n_filled_buckets_vac,
+                      lambda_period,
+                      total_buckets,
+                      prob_sce)
+
+  expected <- 0.20074738
+
+  expect_equal(actual, expected)
+
+  #-----------------------------------------------------------------------------
+  # n_inf_e = 2
+  n_filled_buckets_nat <- 2
+
+  prob_sce <- c(0.5, 0.5) # calculate_prob_per_scenario(1, 2, 4)
+
+  actual <- infection_probability_given_n_inf_e(n_filled_buckets_nat,
+                      n_filled_buckets_vac,
+                      lambda_period,
+                      total_buckets,
+                      prob_sce)
+
+  expected <- 0.138215914
+
+  expect_equal(actual, expected)
+
+  #-----------------------------------------------------------------------------
+  n_filled_buckets_nat <- 3
+
+  prob_sce <- c(0.75, 0.25) # calculate_prob_per_scenario(1, 3, 4)
+
+  actual <- infection_probability_given_n_inf_e(n_filled_buckets_nat,
+                      n_filled_buckets_vac,
+                      lambda_period,
+                      total_buckets,
+                      prob_sce)
+
+  expected <- 0.071371936
+
+  expect_equal(actual, expected)
+
+  #-----------------------------------------------------------------------------
+
+  n_filled_buckets_nat <- 4
+  # n_inf_e = 4
+
+  prob_sce <- c(0, 1) # calculate_prob_per_scenario(1, 4, 4)
+
+  actual <- infection_probability_given_n_inf_e(n_filled_buckets_nat,
+                      n_filled_buckets_vac,
+                      lambda_period,
+                      total_buckets,
+                      prob_sce)
+
+  expected <- 0
+
+  expect_equal(actual, expected)
+
+  #-----------------------------------------------------------------------------
+  # n_inf_e = 1
+
+  lambda_period <- 0.1
+  total_buckets <- 4
+
+  n_filled_buckets_nat <- 1
+  n_filled_buckets_vac <- c(0, 1, 2)
+
+
+  prob_sce <- c(0, 0.5, 0.5) # calculate_prob_per_scenario(2, 1, 4)
+
+
+  actual <- infection_probability_given_n_inf_e(n_filled_buckets_nat,
+                      n_filled_buckets_vac,
+                      lambda_period,
+                      total_buckets,
+                      prob_sce)
+
+  expected <- 0.138215914
+
+  expect_equal(actual, expected)
+
+  #-----------------------------------------------------------------------------
+
+  lambda_period <- 0.1
+  total_buckets <- 4
+
+  n_filled_buckets_nat <- 2
+  n_filled_buckets_vac <- c(0, 1, 2)
+
+  prob_sce <- c(1/6, 4/6, 1/6) # calculate_prob_per_scenario(2, 2, 4)
+
+  actual <- infection_probability_given_n_inf_e(n_filled_buckets_nat,
+                      n_filled_buckets_vac,
+                      lambda_period,
+                      total_buckets,
+                      prob_sce)
+
+  expected <- 0.093653262
+
+  expect_equal(actual, expected)
+})
+
+test_that("calculate_prob_per_scenario() works", {
+
+  actual   <- calculate_prob_per_scenario(vac_buckets   = 1,
+                                          n_inf_e       = 1,
+                                          total_buckets = 4,
+                                          is_vac_prob   = TRUE)
+
+  expected <- c(0.25, 0.75)
+
+  expect_equal(actual, expected)
+
+  actual <- calculate_prob_per_scenario(vac_buckets   = 4,
+                              n_inf_e       = 3,
+                              total_buckets = 4,
+                              is_vac_prob   = FALSE)
+
+  expected <- c(0, 1, 0, 0, 0)
+
+  expect_equal(actual, expected)
 })
 
 test_that("simulate_infections() works", {
@@ -164,7 +403,8 @@ test_that("simulate_infections() works", {
                                 init_weight, final_weight, serostatus,
                                 is_vaccinated, rho_v, rho, vac_buckets,
                                 follow_up_times, enrolment_year, weights_fu,
-                                enrolment_weight, is_vac_prob, switch_rho)
+                                enrolment_weight, is_vac_prob, switch_rho,
+                                vac_year = 15)
 
   expected <- c(0, 0, 0, 0, 0, 0, 1, 0, 0)
 
@@ -178,9 +418,36 @@ test_that("simulate_infections() works", {
                                 init_weight, final_weight, serostatus,
                                 is_vaccinated, rho_v, rho, vac_buckets,
                                 follow_up_times, enrolment_year, weights_fu,
-                                enrolment_weight, is_vac_prob, switch_rho)
+                                enrolment_weight, is_vac_prob, switch_rho,
+                                vac_year = 15)
 
-  expected <- c(1, 0, 0, 0, 0, 1, 0, 0, 1)
+  expected <- c(1, 0, 0, 0, 1, 1, 1, 0, 0)
 
   expect_equal(actual, expected)
+
+  set.seed(1135)
+
+  actual <- simulate_infections(
+    n_e              = n_e,
+    start_index      = start_index,
+    init_weight      = init_weight,
+    final_weight     = final_weight,
+    serostatus       = serostatus,
+    is_vaccinated    = is_vaccinated,
+    follow_up_times  = follow_up_times,
+    enrolment_year   = enrolment_year,
+    weights_fu       = weights_fu,
+    enrolment_weight = enrolment_weight,
+    # Global parameters
+    lambda           = lambda,
+    rho_v            = rho_v,
+    rho              = rho,
+    # Model specs
+    total_buckets    = 5,
+    vac_buckets      = 1,
+    is_vac_prob      = 1,
+    switch_rho       = 0,
+    vac_year         = 15)
+
+  expected <- c(1, 0, 0, 0, 0, 1, 0, 0, 1)
 })

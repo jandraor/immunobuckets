@@ -1,7 +1,7 @@
 #' Estimate the cumulative force of infection at enrolment
 #'
 #' @param n_e A non-negative integer.
-#' @param yearly_lambda
+#' @param yearly_lambda A numeric vector
 #' @param start_index A positive integer indicating the year in which the
 #'  individual became susceptible after birth.
 #' @param init_weight A numeric value corresponding to the fraction of the first
@@ -9,10 +9,11 @@
 #' @param final_weight A numeric value representing the fraction of the calendar
 #'  year from the 1st Jan to the date of enrolment
 #'
-#' @returns
+#' @returns A real number
 #' @export
 #'
 #' @examples
+#' estimate_lambda_e(3, rep(0.1, 26), 1, 0.25, 0.75)
 estimate_lambda_e <- function(n_e, yearly_lambda, start_index,
                               init_weight, final_weight) {
 

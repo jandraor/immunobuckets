@@ -1,26 +1,17 @@
-test_that("estimate_prob_after_vaccination() returns the expected values ", {
+test_that("draw_vac_buckets() returns the expected values ", {
 
-  prob_per_n_buckets <- c(0.35, 0.3, 0.2, 0.15)
+  actual   <- draw_vac_buckets(inf_counter = 4, vac_buckets = 1,
+                               total_buckets = 4)
+  expected <- 0
 
-  actual   <- estimate_prob_after_vaccination(4, 1, prob_per_n_buckets)
+  expect_equal(actual,expected)
 
-  expected <- c(prob_per_n_buckets[1] * 0.25,
-                prob_per_n_buckets[1] * 0.75 + prob_per_n_buckets[2]  * 0.5,
-                prob_per_n_buckets[2] * 0.50 + prob_per_n_buckets[3]  * 0.75,
-                prob_per_n_buckets[3] * 0.25 + 0.15)
+  set.seed(1629)
 
-  expect_equal(actual, expected)
+  actual   <- draw_vac_buckets(inf_counter = 3, vac_buckets = 1,
+                               total_buckets = 4)
 
-  actual   <- estimate_prob_after_vaccination(4, 2, prob_per_n_buckets)
+  expected <- 0
 
-  expected <- c(0,
-                (3 / 6) * prob_per_n_buckets[1] + (1/ 6) * prob_per_n_buckets[2] ,
-                (3 / 6) * prob_per_n_buckets[1] +
-                  (4 / 6) * prob_per_n_buckets[2] +
-                  (3 / 6) * prob_per_n_buckets[3],
-                (1 / 6) * prob_per_n_buckets[2] +
-                  (3 / 6) * prob_per_n_buckets[3] +
-                  prob_per_n_buckets[4])
-
-  expect_equal(actual, expected)
+  expect_equal(actual,expected)
 })

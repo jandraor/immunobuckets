@@ -21,7 +21,8 @@ simulate_infections(
   weights_fu,
   enrolment_weight,
   is_vac_prob,
-  switch_rho
+  switch_rho,
+  vac_year
 )
 }
 \arguments{
@@ -88,5 +89,6 @@ simulate_infections(total_buckets    = 4,
                     weights_fu       = c(1, 1),
                     enrolment_weight = 0,
                     is_vac_prob      = 1,
-                    switch_rho       = 1)
+                    switch_rho       = 1,
+                    vac_year         = 15)
 }
