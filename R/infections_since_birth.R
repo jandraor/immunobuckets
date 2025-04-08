@@ -19,12 +19,13 @@
 #'
 #' simulate_infections_since_birth(individuals_df, lambda, rho, stop_index)
 simulate_infections_since_birth <- function(individuals_df, lambda, rho,
-                                            stop_index) {
+                                            stop_index, vac_buckets, rho_v) {
 
   df_list <- split(individuals_df, individuals_df$subject_id)
 
   sim_list <- lapply(df_list, simulate_single_individual,
-                     stop_index = stop_index, lambda = lambda, rho = rho)
+                     stop_index = stop_index, lambda = lambda, rho = rho,
+                     vac_buckets = vac_buckets, rho_v = rho_v)
 
   combined_df <- do.call(rbind, sim_list)
 
@@ -34,7 +35,8 @@ simulate_infections_since_birth <- function(individuals_df, lambda, rho,
 }
 
 # Assumes perfect reporting
-simulate_single_individual <- function(individual_df, stop_index, lambda, rho) {
+simulate_single_individual <- function(individual_df, stop_index, lambda, rho,
+                                       vac_buckets, rho_v) {
 
   subject_id           <- individual_df$subject_id
   is_vaccinated        <- individual_df$is_vaccinated
@@ -43,27 +45,27 @@ simulate_single_individual <- function(individual_df, stop_index, lambda, rho) {
 
   duration_maternal_ab <- 1
 
-  start_index          <- birth_year_index + duration_maternal_ab
-  year_indexes         <- start_index:stop_index
+  enrolment_year  <- birth_year_index + duration_maternal_ab
+  start_index     <- enrolment_year + 1
+  follow_up_times <- start_index:stop_index
 
-  enrolment_year   <- birth_year_index
   total_buckets    <- 4
-  weights_fu       <- rep(1, length(year_indexes))
+  weights_fu       <- rep(0, length(follow_up_times))
   enrolment_weight <- 1
 
-  y <- sim_infection_seroneg(follow_up_times = year_indexes,
-                             enrolment_year,
-                             lambda,
-                             total_buckets,
-                             weights_fu,
-                             enrolment_weight,
-                             rho,
-                             rho_v         = 0,
-                             is_vaccinated = is_vaccinated,
-                             vac_buckets   = 0,
-                             vac_year      = vac_year)
+  y <- sim_infection_seroneg(follow_up_times  = follow_up_times,
+                             enrolment_year   = enrolment_year,
+                             lambda           = lambda,
+                             total_buckets    = total_buckets,
+                             weights_fu       = weights_fu,
+                             enrolment_weight = enrolment_weight,
+                             rho              = rho,
+                             rho_v            = rho_v,
+                             is_vaccinated    = is_vaccinated,
+                             vac_buckets      = vac_buckets,
+                             vac_year         = vac_year)
 
   data.frame(subject_id = subject_id ,
-             year_index = year_indexes,
+             year_index = follow_up_times,
              sim_y      = y)
 }

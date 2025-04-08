@@ -1,99 +1,16 @@
-determine_weight <- function(yr, enrolment_year, enrolment_weight,
-                             follow_up_times, weights_fu, current_idx)
+determine_weight <- function(yr, follow_up_times, weights_fu, current_idx)
 {
   weight <- 1; # Default value for years when there are no measurements.
-
-  # In the first year, the weight represents the period from the
-  #   collection of the blood sample to the end of that year.
-  if(yr == enrolment_year) weight <- enrolment_weight;
 
   # In other years, if the current evaluated year (yr) matches the year of
   #   the current measurement (current_idx), the weight represents the period
   #   from the start of the year to the measurement's date.
-  if(yr != enrolment_year && yr == follow_up_times[current_idx]) {
+  if(yr == follow_up_times[current_idx]) {
     weight = weights_fu[current_idx];
   }
 
   weight
 }
-
-sim_infection_seroneg <- function(follow_up_times,
-                                  enrolment_year,
-                                  lambda,
-                                  total_buckets,
-                                  weights_fu,
-                                  enrolment_weight,
-                                  rho,
-                                  rho_v,
-                                  is_vaccinated,
-                                  vac_buckets,
-                                  vac_year) {
-
-  n_follow_up <- length(follow_up_times)
-  y           <- vector(mode = "integer", length = n_follow_up)
-
-  end_year <- follow_up_times[n_follow_up]
-
-  cml_lambda <- 0 # Cumulative lambda
-
-  current_idx <- 1
-
-  n_filled_buckets_vac <- 0
-
-  if(vac_year <= enrolment_year) {
-    n_filled_buckets_vac <- ifelse(is_vaccinated == 1, vac_buckets, 0)
-  }
-
-  n_filled_buckets_nat <- 0
-
-  inf_counter <- 0
-
-  # I loop through the enrolment year to take into account the effect of the
-  # FOI between the enrolment date and the 31st December of that year.
-  for(yr in enrolment_year:end_year) # loop through all possible years
-  {
-    weight <- determine_weight(yr, enrolment_year, enrolment_weight,
-                              follow_up_times, weights_fu, current_idx);
-
-    cml_lambda <- cml_lambda + weight * lambda[yr];
-
-    # Vaccination occurs at the start of the period
-    if(is_vaccinated == 1 && yr > enrolment_year && yr == vac_year)
-    {
-      n_filled_buckets_nat <- inf_counter
-      n_filled_buckets_vac <- draw_vac_buckets(inf_counter, vac_buckets,
-                                               total_buckets = total_buckets)
-    }
-
-    if(yr == follow_up_times[current_idx]) {
-
-      total_filled_buckets <- n_filled_buckets_vac + n_filled_buckets_nat;
-
-      n_empty_buckets <- max(0,
-                             total_buckets - total_filled_buckets);
-
-      prob_inf <- max(0.00001, 1 - exp(- n_empty_buckets * cml_lambda))
-
-      y[current_idx] <- stats::rbinom(1, 1, prob_inf)
-
-      if (y[current_idx] == 1)
-      {
-        n_filled_buckets_nat <- n_filled_buckets_nat + 1
-        inf_counter          <- inf_counter + 1
-      }
-
-      # Loss of immunity occurs at the end of the period
-      n_filled_buckets_vac <- max(0, n_filled_buckets_vac - rho_v * weight);
-      n_filled_buckets_nat <- max(0, n_filled_buckets_nat - rho * weight);
-
-      cml_lambda  = (1 - weight) * lambda[yr]
-      current_idx = current_idx + 1
-    }
-  }
-
-  y
-}
-
 
 sim_infection_seropos <- function(follow_up_times,
                                   enrolment_year,
@@ -111,12 +28,13 @@ sim_infection_seropos <- function(follow_up_times,
 
   n_follow_up <- length(follow_up_times)
   y           <- vector(mode = "integer", length = n_follow_up)
+  start_year  <- follow_up_times[1]
   end_year    <- follow_up_times[n_follow_up]
 
   # Natural infection(nat)
   n_filled_buckets_nat <- init_filled_buckets;
 
-  lambda_period <- 0
+  lambda_period <- enrolment_weight * lambda[enrolment_year]
 
   current_idx <- 1 # Refers to the index of the current measurement
 
@@ -125,27 +43,11 @@ sim_infection_seropos <- function(follow_up_times,
   if(is_vaccinated == 1) n_filled_buckets_vac <- 0:vac_buckets
 
 
-  for(yr in enrolment_year:end_year) # loop through all possible years
+  for(yr in start_year:end_year) # loop through all possible years
   {
-    weight <- determine_weight(yr, enrolment_year, enrolment_weight,
-                               follow_up_times, weights_fu, current_idx)
+    weight <- determine_weight(yr, follow_up_times, weights_fu, current_idx)
 
     lambda_period <- lambda_period + weight * lambda[yr]
-
-    if(vac_buckets > 0) {
-
-      for(idx in 1:vac_buckets) {
-        n_filled_buckets_vac[idx + 1] <- max(0,
-                                         n_filled_buckets_vac[idx + 1] - rho_v * weight);
-      }
-    }
-
-    for(n_inf_e in 1:total_buckets)
-    {
-      n_filled_buckets_nat[n_inf_e] <-
-        max(0,
-            n_filled_buckets_nat[n_inf_e] - rho * weight);
-    }
 
     if(yr == follow_up_times[current_idx])
     {
@@ -169,6 +71,21 @@ sim_infection_seropos <- function(follow_up_times,
 
       lambda_period <- (1 - weight) * lambda[yr] # Leftover
       current_idx   <- current_idx + 1
+    }
+
+    if(vac_buckets > 0) {
+
+      for(idx in 1:vac_buckets) {
+        n_filled_buckets_vac[idx + 1] <- max(0,
+                                             n_filled_buckets_vac[idx + 1] - rho_v * weight);
+      }
+    }
+
+    for(n_inf_e in 1:total_buckets)
+    {
+      n_filled_buckets_nat[n_inf_e] <-
+        max(0,
+            n_filled_buckets_nat[n_inf_e] - rho * weight);
     }
   }
 
