@@ -30,12 +30,12 @@ sim_infection_seroneg <- function(follow_up_times,
 
   cml_lambda <- enrolment_weight * lambda[enrolment_year]
 
-
-
-  # I loop through the enrolment year to take into account the effect of the
-  # FOI between the enrolment date and the 31st December of that year.
-  for(yr in start_year:end_year) # loop through all possible years
+  for(yr in start_year:end_year)
   {
+    # cat("\n Year: ", yr)
+    # cat("\n n_filled_buckets_nat: ", n_filled_buckets_nat)
+    # cat("\n n_filled_buckets_vac: ", n_filled_buckets_vac)
+
     weight <- determine_weight(yr, follow_up_times, weights_fu, current_idx)
 
     n_filled_buckets_nat <- max(0, n_filled_buckets_nat - rho * weight)
@@ -53,9 +53,11 @@ sim_infection_seroneg <- function(follow_up_times,
 
       y[current_idx] <- stats::rbinom(1, 1, prob_inf)
 
+      # cat("\n y: ", y[current_idx], "\n")
+
       if (y[current_idx] == 1)
       {
-        n_filled_buckets_nat <- n_filled_buckets_nat + 1
+        n_filled_buckets_nat <- min(total_buckets, n_filled_buckets_nat + 1)
         inf_counter          <- inf_counter + 1
       }
 
@@ -66,14 +68,12 @@ sim_infection_seroneg <- function(follow_up_times,
     #  with the infection probability
     if(is_vaccinated == 1 && yr == vac_year)
     {
-      n_filled_buckets_nat <- inf_counter # redress loss of immunity
+      n_filled_buckets_nat <- inf_counter # redresses loss of immunity
       n_filled_buckets_vac <- draw_vac_buckets(inf_counter, vac_buckets,
                                                total_buckets = total_buckets)
     }
 
     cml_lambda  <- (1 - weight) * lambda[yr]
-
-    # Loss of immunity occurs at the end of the period
 
     n_filled_buckets_vac <- max(0, n_filled_buckets_vac - rho_v * (1 - weight))
     n_filled_buckets_nat <- max(0, n_filled_buckets_nat - rho * (1 - weight))
@@ -81,9 +81,3 @@ sim_infection_seroneg <- function(follow_up_times,
 
   y
 }
-
-# perro_function <- function(y, n_filled_buckets_nat, n_filled_buckets_vac) {
-#
-#
-#   c(y, n_filled_buckets_nat, n_filled_buckets_vac)
-# }
