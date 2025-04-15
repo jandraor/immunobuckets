@@ -14,11 +14,12 @@ estimate_lambda_e(n_e, yearly_lambda, start_index, init_weight, final_weight)
 \item{start_index}{A positive integer indicating the year in which the
 individual became susceptible after birth.}
 
-\item{init_weight}{A numeric value corresponding to the fraction of the first
-year in which the individual was susceptible.}
+\item{init_weight}{A numeric value indicating the fraction of the calendar
+year that had passed from 1st January to the date when the individual became
+susceptible.}
 
 \item{final_weight}{A numeric value representing the fraction of the calendar
-year from the 1st Jan to the date of enrolment}
+year to the date of enrolment to 31st December.}
 }
 \value{
 A real number

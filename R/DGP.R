@@ -32,7 +32,7 @@ sim_infection_seropos <- function(follow_up_times,
   end_year    <- follow_up_times[n_follow_up]
 
   # Natural infection(nat)
-  n_filled_buckets_nat <- init_filled_buckets;
+  n_filled_buckets_nat <- init_filled_buckets
 
   lambda_period <- enrolment_weight * lambda[enrolment_year]
 
@@ -48,6 +48,21 @@ sim_infection_seropos <- function(follow_up_times,
     weight <- determine_weight(yr, follow_up_times, weights_fu, current_idx)
 
     lambda_period <- lambda_period + weight * lambda[yr]
+
+    if(vac_buckets > 0)
+    {
+      for(idx in 1:vac_buckets)
+      {
+        n_filled_buckets_vac[idx + 1] <-
+          max(0, n_filled_buckets_vac[idx + 1] - rho_v * weight);
+      }
+    }
+
+    for(n_inf_e in 1:total_buckets)
+    {
+      n_filled_buckets_nat[n_inf_e] <-
+        max(0, n_filled_buckets_nat[n_inf_e] - rho * weight);
+    }
 
     if(yr == follow_up_times[current_idx])
     {
@@ -65,27 +80,27 @@ sim_infection_seropos <- function(follow_up_times,
       {
         for(n_inf_e in 1:total_buckets)
         {
-          n_filled_buckets_nat[n_inf_e] <- max(0, n_filled_buckets_nat[n_inf_e] + 1);
+          n_filled_buckets_nat[n_inf_e] <- min(total_buckets,
+                                               n_filled_buckets_nat[n_inf_e] + 1);
         }
       }
-
-      lambda_period <- (1 - weight) * lambda[yr] # Leftover
       current_idx   <- current_idx + 1
     }
 
-    if(vac_buckets > 0) {
+    lambda_period <- (1 - weight) * lambda[yr] # Leftover
 
+    if(vac_buckets > 0)
+    {
       for(idx in 1:vac_buckets) {
-        n_filled_buckets_vac[idx + 1] <- max(0,
-                                             n_filled_buckets_vac[idx + 1] - rho_v * weight);
+        n_filled_buckets_vac[idx + 1] <-
+          max(0, n_filled_buckets_vac[idx + 1] - rho_v * (1 - weight));
       }
     }
 
     for(n_inf_e in 1:total_buckets)
     {
       n_filled_buckets_nat[n_inf_e] <-
-        max(0,
-            n_filled_buckets_nat[n_inf_e] - rho * weight);
+        max(0, n_filled_buckets_nat[n_inf_e] - rho * (1- weight));
     }
   }
 
@@ -276,9 +291,11 @@ simulate_infections <- function(total_buckets, n_e, lambda, start_index,
   rho   <- rho * switch_rho
   rho_v <- rho_v * switch_rho
 
+  #lambda_e: Cumulative force of infection from birth to enrolment
   lambda_e <- estimate_lambda_e(n_e, lambda, start_index, init_weight,
                                 final_weight)
 
+  #p_e: Probability of being seropositive at enrolment
   p_e <- (1 - exp(-total_buckets * lambda_e))
 
   if(serostatus == 0) # if seronegative at enrolment
@@ -293,7 +310,8 @@ simulate_infections <- function(total_buckets, n_e, lambda, start_index,
                                rho_v,
                                is_vaccinated,
                                vac_buckets,
-                               vac_year)
+                               vac_year,
+                               is_vac_prob = is_vac_prob)
   }
 
   if(serostatus == 1) {
@@ -310,7 +328,7 @@ simulate_infections <- function(total_buckets, n_e, lambda, start_index,
     #   scenario (# of previous infections) at enrolment
     n_filled_buckets <- vector(mode = "numeric", length = total_buckets)
 
-    B_rho <- max(0, rho * n_e * (1 - 1 / (total_buckets * lambda_e)));
+    B_rho <- max(0, rho * n_e * (1 - 1 / (total_buckets * lambda_e)))
 
     if(is_vaccinated == 1 && vac_buckets > 0) B_rho <- 0
 

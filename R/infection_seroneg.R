@@ -8,7 +8,8 @@ sim_infection_seroneg <- function(follow_up_times,
                                   rho_v,
                                   is_vaccinated,
                                   vac_buckets,
-                                  vac_year) {
+                                  vac_year,
+                                  is_vac_prob) {
 
   n_follow_up <- length(follow_up_times)
   y           <- vector(mode = "integer", length = n_follow_up)
@@ -70,7 +71,8 @@ sim_infection_seroneg <- function(follow_up_times,
     {
       n_filled_buckets_nat <- inf_counter # redresses loss of immunity
       n_filled_buckets_vac <- draw_vac_buckets(inf_counter, vac_buckets,
-                                               total_buckets = total_buckets)
+                                               total_buckets = total_buckets,
+                                               is_vac_prob)
     }
 
     cml_lambda  <- (1 - weight) * lambda[yr]

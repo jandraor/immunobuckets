@@ -4,7 +4,15 @@
 \alias{simulate_infections_since_birth}
 \title{Simulate infections since birth}
 \usage{
-simulate_infections_since_birth(individuals_df, lambda, rho, stop_index)
+simulate_infections_since_birth(
+  individuals_df,
+  lambda,
+  rho,
+  stop_index,
+  vac_buckets,
+  rho_v,
+  is_vac_prob
+)
 }
 \arguments{
 \item{individuals_df}{A data frame}
@@ -14,6 +22,12 @@ simulate_infections_since_birth(individuals_df, lambda, rho, stop_index)
 \item{rho}{A numeric value}
 
 \item{stop_index}{An integer}
+
+\item{vac_buckets}{An integer}
+
+\item{rho_v}{A numeric value}
+
+\item{is_vac_prob}{A boolean.}
 }
 \value{
 A data frame
