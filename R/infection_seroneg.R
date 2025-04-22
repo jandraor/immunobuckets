@@ -33,10 +33,6 @@ sim_infection_seroneg <- function(follow_up_times,
 
   for(yr in start_year:end_year)
   {
-    # cat("\n Year: ", yr)
-    # cat("\n n_filled_buckets_nat: ", n_filled_buckets_nat)
-    # cat("\n n_filled_buckets_vac: ", n_filled_buckets_vac)
-
     weight <- determine_weight(yr, follow_up_times, weights_fu, current_idx)
 
     n_filled_buckets_nat <- max(0, n_filled_buckets_nat - rho * weight)
@@ -54,8 +50,6 @@ sim_infection_seroneg <- function(follow_up_times,
 
       y[current_idx] <- stats::rbinom(1, 1, prob_inf)
 
-      # cat("\n y: ", y[current_idx], "\n")
-
       if (y[current_idx] == 1)
       {
         n_filled_buckets_nat <- min(total_buckets, n_filled_buckets_nat + 1)
@@ -65,20 +59,18 @@ sim_infection_seroneg <- function(follow_up_times,
       current_idx <- current_idx + 1
     }
 
-    # Vaccination occurs at the end of the period so that it does not interfere
-    #  with the infection probability
-    if(is_vaccinated == 1 && yr == vac_year)
+    cml_lambda  <- (1 - weight) * lambda[yr]
+
+    n_filled_buckets_vac <- max(0, n_filled_buckets_vac - rho_v * (1 - weight))
+    n_filled_buckets_nat <- max(0, n_filled_buckets_nat - rho * (1 - weight))
+
+    if(is_vaccinated == 1 && vac_buckets > 0 && yr == vac_year)
     {
       n_filled_buckets_nat <- inf_counter # redresses loss of immunity
       n_filled_buckets_vac <- draw_vac_buckets(inf_counter, vac_buckets,
                                                total_buckets = total_buckets,
                                                is_vac_prob)
     }
-
-    cml_lambda  <- (1 - weight) * lambda[yr]
-
-    n_filled_buckets_vac <- max(0, n_filled_buckets_vac - rho_v * (1 - weight))
-    n_filled_buckets_nat <- max(0, n_filled_buckets_nat - rho * (1 - weight))
   }
 
   y

@@ -41,7 +41,8 @@ simulate_infections_since_birth <- function(individuals_df, lambda, rho,
 
 # Assumes perfect reporting
 simulate_single_individual <- function(individual_df, stop_index, lambda, rho,
-                                       vac_buckets, rho_v, is_vac_prob) {
+                                       vac_buckets, rho_v, is_vac_prob,
+                                       total_buckets = 4) {
 
   subject_id           <- individual_df$subject_id
   is_vaccinated        <- individual_df$is_vaccinated
@@ -54,9 +55,8 @@ simulate_single_individual <- function(individual_df, stop_index, lambda, rho,
   start_index     <- enrolment_year + 1
   follow_up_times <- start_index:stop_index
 
-  total_buckets    <- 4
-  weights_fu       <- rep(0, length(follow_up_times))
-  enrolment_weight <- 1
+  weights_fu       <- rep(1, length(follow_up_times))
+  enrolment_weight <- 0
 
   y <- sim_infection_seroneg(follow_up_times  = follow_up_times,
                              enrolment_year   = enrolment_year,

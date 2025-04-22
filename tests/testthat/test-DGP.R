@@ -108,6 +108,8 @@ test_that("simulate_infections() works", {
   expect_type(actual , "integer")
 })
 
+#---------calculate_infection_probability()-------------------------------------
+
 test_that("calculate_infection_probability() works", {
 
   #-----------------------------------------------------------------------------
@@ -159,6 +161,37 @@ test_that("calculate_infection_probability() works", {
     0.08983923* 0.0303521
 
   expect_equal(actual, expected, tolerance = 1e-6)
+})
+
+test_that("calculate_infection_probability() works with vaccination", {
+
+  actual <- calculate_infection_probability(
+    total_buckets        = 4,
+    n_filled_buckets_nat = c(1:4),
+    lambda_period        = 0.1,
+    n_filled_buckets_vac = c(0, 1),
+    prob_n_inf_e         = c(0, 0, 1, 0),
+    is_vac_prob          = 1,
+    vac_buckets          = 1)
+
+  expected <- (1 - exp(-0.1)) * 0.75
+
+  expect_equal(actual, expected)
+
+  actual <- calculate_infection_probability(
+    total_buckets        = 4,
+    n_filled_buckets_nat = c(1:4),
+    lambda_period        = 0.1,
+    n_filled_buckets_vac = c(0, 1),
+    prob_n_inf_e         = c(0.5, 0.5, 0, 0),
+    is_vac_prob          = 1,
+    vac_buckets          = 1)
+
+  expected <- 0.5 * (0.25 * (1 - exp(-0.1 * 3)) + 0.75 * (1 - exp(-0.1 * 2)) ) +
+    0.5 * (0.5 * (1 - exp(-0.1 * 2)) + 0.5 * (1 - exp(-0.1 * 1)) )
+
+  expect_equal(actual, expected)
+
 })
 
 test_that("calculate_infection_probability() returns a lower value when
