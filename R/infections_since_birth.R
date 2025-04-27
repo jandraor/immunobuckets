@@ -55,7 +55,7 @@ simulate_single_individual <- function(individual_df, stop_index, lambda, rho,
   start_index     <- enrolment_year + 1
   follow_up_times <- start_index:stop_index
 
-  weights_fu       <- rep(1, length(follow_up_times))
+  weights_fu       <- rep(0, length(follow_up_times))
   enrolment_weight <- 0
 
   y <- sim_infection_seroneg(follow_up_times  = follow_up_times,

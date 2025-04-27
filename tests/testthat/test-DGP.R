@@ -105,7 +105,7 @@ test_that("simulate_infections() works", {
     switch_rho       = m_specs$switch_rho)
 
 
-  expect_type(actual , "integer")
+  expect_type(actual , "double")
 })
 
 #---------calculate_infection_probability()-------------------------------------

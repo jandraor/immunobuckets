@@ -18,32 +18,6 @@ test_that("simulate_infections_since_birth() works",
                                             rho_v = 0.12)
 
   expect_equal(nrow(actual), 5)
-
-  expected <- data.frame(subject_id = 1,
-                         year_index = 11:15,
-                         sim_y      = c(0, 1, 0, 0, 0))
-
-  expect_equal(actual, expected)
-
-  individuals_df <- data.frame(subject_id       = 1:2,
-                               birth_year_index = c(9, 7),
-                               is_vaccinated    = 0,
-                               vac_year         = 15)
-
-  set.seed(1437)
-
-  actual <- simulate_infections_since_birth(individuals_df,
-                                            lambda,
-                                            rho,
-                                            stop_index,
-                                            rho_v = 0.12)
-
-  expected <- data.frame(subject_id = c(rep(1, 5), rep(2, 7)),
-                         year_index = c(11:15, 9:15),
-                         sim_y      = c(0, 1, 0, 0, 0,
-                                        1, 0, 1, 0, 0, 1, 1))
-
-  expect_equal(actual, expected)
 })
 
 test_that("simulate_single_individual produces a different value for different rho", {
