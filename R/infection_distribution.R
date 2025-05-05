@@ -1,39 +1,27 @@
-prob_n_infections <- function(n_i, lambda_delta_t, n_slots) {
+calculate_prob_n_inf <- function(lambda_avg, n_e, total_buckets) {
 
-  n_perm <- choose(n_slots, n_i);
+  #  Probability of acquiring infection given number of previous infections
+  p_vec <- 1 - exp(-(total_buckets - 0:total_buckets) * lambda_avg)
 
-  prob_pos         <- (1 - exp(-lambda_delta_t))^n_i;
-  prob_neg         <- exp(-lambda_delta_t)^(n_slots - n_i);
-  prob_n_infection <- n_perm * prob_pos * prob_neg;
+  # states[i+1] = P(exactly i infections at the current time)
+  states    <- numeric(total_buckets + 1)
+  states[1] <- 1L
 
-  prob_n_infection
+  for (yr in seq_len(n_e))
+  {
+    # prob of staying in the current state
+    states_tilde <- states * (1 - p_vec)
+    # adding prob of moving to the next state
+    states_tilde[-1] <- states_tilde[-1] + states[-length(states)] * p_vec[-length(p_vec)]
+    states <- states_tilde
+  }
+
+  states
 }
 
-calculate_prob_n_inf <- function(min_inf, n_slots, lambda) {
+estimate_conditional_prob <- function(prob_vec, min_inf) {
+  unconditional_prob <- tail(prob_vec, -min_inf)
+  normalising_const  <- sum(unconditional_prob)
 
-  # Unnormalised (un) probability of a given number of infections
-  un_prob_inf <- vector(length = n_slots)
-  prob_slots  <- vector(length = n_slots)
-
-  nc <- 0 # normalising constant
-
-  for(i in 1:n_slots)   {
-    un_prob_inf[i] <- ifelse(min_inf > i,
-                             0,
-                             prob_n_infections(i, lambda, n_slots))
-  }
-
-  nc <- sum(un_prob_inf);
-
-  if(nc == 0)
-  {
-    for(i in 1:n_slots) prob_slots[i] <- 0;
-  }
-
-  if(nc > 0)
-  {
-    for(i in 1:n_slots) prob_slots[i] = un_prob_inf[i] / nc;
-  }
-
-  prob_slots
+  unconditional_prob / normalising_const
 }

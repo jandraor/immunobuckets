@@ -111,7 +111,8 @@ simulate_single_year <- function(yr, n_filled_buckets_nat, n_filled_buckets_vac,
 
   if(is_vaccinated == 1 && vac_buckets > 0 && yr == vac_year)
   {
-    n_filled_buckets_nat <- inf_counter # redresses loss of immunity
+    # redresses loss of immunity
+    n_filled_buckets_nat <- min(total_buckets, inf_counter)
     n_filled_buckets_vac <- draw_vac_buckets(inf_counter, vac_buckets,
                                              total_buckets = total_buckets,
                                              is_vac_prob)
