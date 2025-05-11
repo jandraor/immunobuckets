@@ -143,16 +143,20 @@ calculate_prob_per_scenario <- function(vac_buckets, n_inf_e, total_buckets,
 
   if(vac_buckets == 0) return(1)
 
+  if(!is_vac_prob)
+  {
+    n_sce    <- vac_buckets + 1
+    prob_sce <- rep(0, n_sce)
+    index    <- total_buckets - n_inf_e + 1
+
+    if (index > n_sce) index <- n_sce # Map to the last position
+
+    prob_sce[index] <- 1
+
+    return(prob_sce)
+  }
+
   if(vac_buckets == 1) {
-
-    if(!is_vac_prob) {
-
-      prob_sce <- c(0, 1)
-
-      if(n_inf_e == 4) prob_sce <- c(1, 0)
-
-      return(prob_sce)
-    }
 
     prob_not_filling <- n_inf_e / total_buckets
     prob_sce         <- c(prob_not_filling, 1 - prob_not_filling)
@@ -160,17 +164,6 @@ calculate_prob_per_scenario <- function(vac_buckets, n_inf_e, total_buckets,
   }
 
   if(vac_buckets == 2) {
-
-    if(!is_vac_prob) {
-
-      prob_sce <- c(0, 0, 1)
-
-      if(n_inf_e == 3) prob_sce <- c(0, 1, 0)
-
-      if(n_inf_e == 4) prob_sce <- c(1, 0, 0)
-
-      return(prob_sce)
-    }
 
     if(n_inf_e == 1) prob_sce <- c(0, 2/4, 2/4)
 
@@ -181,28 +174,6 @@ calculate_prob_per_scenario <- function(vac_buckets, n_inf_e, total_buckets,
     if(n_inf_e == 4) prob_sce <- c(1, 0, 0)
 
     return(prob_sce)
-  }
-
-  if(vac_buckets == 3) {
-
-    if(!is_vac_prob) {
-      prob_sce <- rep(0, vac_buckets + 1)
-      prob_sce[total_buckets - n_inf_e] <- 1
-
-      return(prob_sce)
-    }
-  }
-
-  if(vac_buckets == 4) {
-
-    if(!is_vac_prob) {
-
-      prob_sce <- rep(0, vac_buckets + 1)
-
-      prob_sce[total_buckets - n_inf_e + 1] <- 1
-
-      return(prob_sce)
-    }
   }
 
   stop("Scenario not supported", call. = FALSE)

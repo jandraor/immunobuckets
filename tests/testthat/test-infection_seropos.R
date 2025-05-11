@@ -377,3 +377,25 @@ test_that("calculate_prob_per_scenario() works", {
 
   expect_equal(actual, expected)
 })
+
+test_that("calculate_prob_per_scenario() works for a vaccine that fills three
+          buckets deterministically",
+{
+  actual <- calculate_prob_per_scenario(vac_buckets   = 3,
+                                        n_inf_e       = 1,
+                                        total_buckets = 4,
+                                        is_vac_prob   = FALSE)
+
+  expected <- c(0, 0, 0, 1)
+
+  expect_equal(actual, expected)
+
+  actual <- calculate_prob_per_scenario(vac_buckets   = 3,
+                                        n_inf_e       = 4,
+                                        total_buckets = 4,
+                                        is_vac_prob   = FALSE)
+
+  expected <- c(1, 0, 0, 0)
+
+  expect_equal(actual, expected)
+})
