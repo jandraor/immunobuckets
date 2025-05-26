@@ -20,7 +20,7 @@ calculate_prob_n_inf <- function(lambda_avg, n_e, total_buckets) {
 }
 
 estimate_conditional_prob <- function(prob_vec, min_inf) {
-  unconditional_prob <- tail(prob_vec, -min_inf)
+  unconditional_prob <- utils::tail(prob_vec, -min_inf)
   normalising_const  <- sum(unconditional_prob)
 
   unconditional_prob / normalising_const

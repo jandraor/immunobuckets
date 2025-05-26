@@ -38,11 +38,15 @@ Simulate infections since birth
 \examples{
 individuals_df <- data.frame(subject_id       = 1,
                              birth_year_index = 9,
-                             is_vaccinated    = 1)
+                             is_vaccinated    = 1,
+                             vac_year         = 15)
 
-rho        <- 0.05
-stop_index <- 15
-lambda     <- rep(0.14, 15)
 
-simulate_infections_since_birth(individuals_df, lambda, rho, stop_index)
+simulate_infections_since_birth(individuals_df = individuals_df,
+                                lambda         = rep(0.14, 15),
+                                rho            = 0.05,
+                                stop_index     = 15,
+                                vac_buckets    = 1,
+                                rho_v          = 0.12,
+                                is_vac_prob    = 1)
 }

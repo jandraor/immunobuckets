@@ -16,6 +16,9 @@ determine_weight <- function(yr, follow_up_times, weights_fu, current_idx)
 #'
 #' @param total_buckets A numeric value indicating the number of serotypes.
 #' @param n_e A
+#' @param avg_lambda_e A number corresponding to the average force of infection
+#'  that the individual experience since becoming susceptible to the time of
+#'  enrolment.
 #' @param lambda A numeric vector for the yearly FOI.
 #' @param start_index A
 #' @param init_weight A
@@ -36,7 +39,8 @@ determine_weight <- function(yr, follow_up_times, weights_fu, current_idx)
 #' @param switch_rho A numeric value,
 #'  which can be either 1 (allows re-susceptibility) or 0 (no re-susceptibility).
 #'  Employing the buckets metaphor, this parameter determines whether buckets
-#'  have a hole of leaking immunity.
+#'  have a hole of waning immunity.
+#' @param vac_year A number.
 #'
 #' @returns A vector of zeros and ones, where one represents infection.
 #' @export
@@ -44,6 +48,7 @@ determine_weight <- function(yr, follow_up_times, weights_fu, current_idx)
 #' @examples
 #' simulate_infections(total_buckets    = 4,
 #'                     n_e              = 2,
+#'                     avg_lambda_e     = 0.1,
 #'                     lambda           = rep(0.1, 4),
 #'                     start_index      = 1,
 #'                     init_weight      = 0,

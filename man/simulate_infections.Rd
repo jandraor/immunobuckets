@@ -7,6 +7,7 @@
 simulate_infections(
   total_buckets,
   n_e,
+  avg_lambda_e,
   lambda,
   start_index,
   init_weight,
@@ -29,6 +30,10 @@ simulate_infections(
 \item{total_buckets}{A numeric value indicating the number of serotypes.}
 
 \item{n_e}{A}
+
+\item{avg_lambda_e}{A number corresponding to the average force of infection
+that the individual experience since becoming susceptible to the time of
+enrolment.}
 
 \item{lambda}{A numeric vector for the yearly FOI.}
 
@@ -64,7 +69,9 @@ time elapsed from the date of the first blood draw to the year's end
 \item{switch_rho}{A numeric value,
 which can be either 1 (allows re-susceptibility) or 0 (no re-susceptibility).
 Employing the buckets metaphor, this parameter determines whether buckets
-have a hole of leaking immunity.}
+have a hole of waning immunity.}
+
+\item{vac_year}{A number.}
 }
 \value{
 A vector of zeros and ones, where one represents infection.
@@ -75,6 +82,7 @@ Simulate infections
 \examples{
 simulate_infections(total_buckets    = 4,
                     n_e              = 2,
+                    avg_lambda_e     = 0.1,
                     lambda           = rep(0.1, 4),
                     start_index      = 1,
                     init_weight      = 0,
