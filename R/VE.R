@@ -1,19 +1,22 @@
-#' Title
+#' Estimate cumulative vaccine efficacy
 #'
-#' @param follow_up_df A data frame
+#' @param follow_up_df A data frame with four mandatory columns:
+#'  \code{subject_id}, \code{year_index}, \code{is_vaccinated}, and
+#'  \code{infection}
 #'
 #' @returns A data frame
 #' @export
 #'
 #' @examples
-#'   follow_up_df <- data.frame(subject_id    = rep(1:4, 5),
-#'                              year_index    = rep(1:5, each = 4),
-#'                              is_vaccinated = rep(c(1, 1, 0, 0), 5),
-#'                              infection     = c(0, 0, 1, 0,
-#'                                                0, 1, 0, 1,
-#'                                                1, 0, 0, 0,
-#'                                                0, 0, 0, 0,
-#'                                                0, 0, 0, 0))
+#'follow_up_df <- data.frame(subject_id    = rep(1:4, 5),
+#'                           year_index    = rep(1:5, each = 4),
+#'                           is_vaccinated = rep(c(1, 1, 0, 0), 5),
+#'                           infection     = c(0, 0, 1, 0,
+#'                                             0, 1, 0, 1,
+#'                                             1, 0, 0, 0,
+#'                                             0, 0, 0, 0,
+#'                                             0, 0, 0, 0),
+#'                           weight        = rep(1, 20))
 #'  estimate_cumulative_VE(follow_up_df)
 estimate_cumulative_VE <- function(follow_up_df)
 {
@@ -33,7 +36,10 @@ estimate_cumulative_VE <- function(follow_up_df)
                                         VE_input$earliest_infection)
 
   VE_input$marker <- ifelse(VE_input$year_index > VE_input$earliest_infection,
-                            0, 1)
+                            0,
+                            ifelse(VE_input$infection == 1,
+                                   VE_input$weight,
+                                   1))
 
   incidence_df <- stats::aggregate(cbind(n_inf = infection, n_people = marker) ~
                               year_index + is_vaccinated,

@@ -2,27 +2,30 @@
 % Please edit documentation in R/VE.R
 \name{estimate_cumulative_VE}
 \alias{estimate_cumulative_VE}
-\title{Title}
+\title{Estimate cumulative vaccine efficacy}
 \usage{
 estimate_cumulative_VE(follow_up_df)
 }
 \arguments{
-\item{follow_up_df}{A data frame}
+\item{follow_up_df}{A data frame with four mandatory columns:
+\code{subject_id}, \code{year_index}, \code{is_vaccinated}, and
+\code{infection}}
 }
 \value{
 A data frame
 }
 \description{
-Title
+Estimate cumulative vaccine efficacy
 }
 \examples{
-  follow_up_df <- data.frame(subject_id    = rep(1:4, 5),
-                             year_index    = rep(1:5, each = 4),
-                             is_vaccinated = rep(c(1, 1, 0, 0), 5),
-                             infection     = c(0, 0, 1, 0,
-                                               0, 1, 0, 1,
-                                               1, 0, 0, 0,
-                                               0, 0, 0, 0,
-                                               0, 0, 0, 0))
+follow_up_df <- data.frame(subject_id    = rep(1:4, 5),
+                          year_index    = rep(1:5, each = 4),
+                          is_vaccinated = rep(c(1, 1, 0, 0), 5),
+                          infection     = c(0, 0, 1, 0,
+                                            0, 1, 0, 1,
+                                            1, 0, 0, 0,
+                                            0, 0, 0, 0,
+                                            0, 0, 0, 0),
+                          weight        = rep(1, 20))
  estimate_cumulative_VE(follow_up_df)
 }
