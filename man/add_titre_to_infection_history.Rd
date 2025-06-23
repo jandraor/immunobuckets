@@ -4,7 +4,11 @@
 \alias{add_titre_to_infection_history}
 \title{Add titres to infection history}
 \usage{
-add_titre_to_infection_history(inf_history_df, long_decay_coefficient)
+add_titre_to_infection_history(
+  inf_history_df,
+  long_decay_coefficient,
+  peak_scaling_factor
+)
 }
 \arguments{
 \item{inf_history_df}{A data frame}

@@ -26,8 +26,10 @@
 #'                                 rho_v          = 0.12,
 #'                                 is_vac_prob    = 1)
 simulate_infections_since_birth <- function(individuals_df, lambda, rho,
-                                            stop_index, vac_buckets, rho_v,
-                                            is_vac_prob) {
+                                            stop_index,
+                                            vac_buckets = 0,
+                                            rho_v       = 0,
+                                            is_vac_prob = 0) {
 
   df_list <- split(individuals_df, individuals_df$subject_id)
 
