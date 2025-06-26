@@ -79,9 +79,21 @@ test_that("estimate_long_rate() works",
 test_that("estimate_rise() works",
 {
   rise_options <- list(intercept = 8,
-                       slope     = 0.8)
+                       slope     = -0.8)
 
   actual <- estimate_rise(baseline_titre = 0, rise_options)
+
+  expected <- 8
+
+  expect_equal(actual, expected)
+
+  actual <- estimate_rise(baseline_titre = 1000, rise_options)
+
+  expected <- 0
+
+  expect_equal(actual, expected)
+
+  actual <- estimate_rise(baseline_titre = -1000, rise_options)
 
   expected <- 8
 

@@ -114,8 +114,9 @@ estimate_short_rate <- function(rise, short_options) {
   short_options$intercept + short_options$slope * rise
 }
 
+# baseline_titre is in log scale
 estimate_rise <- function(baseline_titre, rise_options) {
-  rise_options$intercept + rise_options$slope * baseline_titre
+  max(0, rise_options$intercept + rise_options$slope * max(0, baseline_titre))
 }
 
 estimate_long_rate <- function(age, long_options)
