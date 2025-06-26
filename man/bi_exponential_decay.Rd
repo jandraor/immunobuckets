@@ -4,7 +4,7 @@
 \alias{bi_exponential_decay}
 \title{Simulate bi-exponential decay}
 \usage{
-bi_exponential_decay(t, A0, par_sigma, par_lambda, par_rho)
+bi_exponential_decay(t, A0, par_sigma, par_gamma, par_rho)
 }
 \arguments{
 \item{t}{Time}
@@ -13,9 +13,9 @@ bi_exponential_decay(t, A0, par_sigma, par_lambda, par_rho)
 
 \item{par_sigma}{Rate of short-term decay}
 
-\item{par_lambda}{Rate of long-term decay}
-
 \item{par_rho}{Proportion of short-term decay}
+
+\item{par_lambda}{Rate of long-term decay}
 }
 \value{
 A numeric vector

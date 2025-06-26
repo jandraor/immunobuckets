@@ -6,16 +6,21 @@
 \usage{
 add_titre_to_infection_history(
   inf_history_df,
-  long_decay_coefficient,
-  peak_scaling_factor
+  short_options,
+  long_options,
+  rise_options
 )
 }
 \arguments{
 \item{inf_history_df}{A data frame}
 
-\item{long_decay_coefficient}{A scalar in the interval (0, 1)
-that modulates the long-term decay rate, representing the proportion of the
-long-term rate that is effectively applied to the system.}
+\item{short_options}{A list of parameters to configure the short-term decay
+rate.}
+
+\item{long_options}{A list of parameters to configure the long-term decay
+rate.}
+
+\item{rise_options}{A list of parameters to configure the rise.}
 }
 \value{
 A data frame
@@ -27,9 +32,15 @@ Add titres to infection history
 inf_history_df <-
   data.frame(subject_id = 1,
              year_index = 11:23,
+             age        = 2:14,
              sim_y      = 0)
-
 inf_history_df$sim_y[c(6, 8, 11, 12)] <- 1
 
-add_titre_to_infection_history(inf_history_df)
+add_titre_to_infection_history(
+inf_history_df,
+long_options  = list(L = 0.22, a = -0.96, b = 18.6),
+short_options = list(intercept = 0.02,
+slope     = 0.003342),
+rise_options  = list(intercept = 8,
+                     slope     = -0.8))
 }

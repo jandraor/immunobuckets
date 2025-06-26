@@ -6,7 +6,7 @@ Authors@R: c(
     person("Jair", "Andrade", , "jair.albert.andrade@gmail.com", 
       role = c("aut", "cre"),
       comment = c(ORCID = "0000-0002-1412-7868")),
-    person("Adrian", "Mitard", role = "aut")
+    person("Adrien", "Mitard", role = "aut")
   )
 Description: More about what it does (maybe more than one line).
     Continuation lines should be indented.

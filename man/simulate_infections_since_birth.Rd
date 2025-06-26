@@ -9,9 +9,9 @@ simulate_infections_since_birth(
   lambda,
   rho,
   stop_index,
-  vac_buckets,
-  rho_v,
-  is_vac_prob
+  vac_buckets = 0,
+  rho_v = 0,
+  is_vac_prob = 0
 )
 }
 \arguments{
