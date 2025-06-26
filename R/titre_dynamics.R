@@ -95,7 +95,7 @@ add_titre_to_infection_history <- function(
 #' @param t Time
 #' @param A0 Peak
 #' @param par_sigma Rate of short-term decay
-#' @param par_lambda Rate of long-term decay
+#' @param par_gamma Rate of long-term decay
 #' @param par_rho Proportion of short-term decay
 #'
 #' @returns A numeric vector
