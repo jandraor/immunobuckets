@@ -31,6 +31,17 @@ add_titre_to_infection_history <- function(
     long_options,
     rise_options)
 {
+  # Required columns
+  required_cols <- c("subject_id", "year_index", "age", "sim_y")
+
+  missing <- setdiff(required_cols, names(inf_history_df))
+
+  if (length(missing) > 0) {
+    stop(paste("Missing required columns in `inf_history_df`:",
+               paste(missing, collapse = ", ")))
+  }
+
+
   inf_history_df$cumulative_infections <- cumsum(inf_history_df$sim_y)
 
   df_list <- split(inf_history_df, inf_history_df$cumulative_infections)
@@ -56,23 +67,21 @@ add_titre_to_infection_history <- function(
       short_rate <- estimate_short_rate(rise, short_options)
 
       # Long-term decay rate
-      long_rate <- estimate_long_rate(c(df$age[[1]], df$age), long_options)
+      long_rates <- estimate_long_rate(df$age, long_options)
 
-      long_rate <- long_rate / 360
+      long_rates <- long_rates / 360
 
-      anchor_index <- min(df$year_index)
+      A0 <- exp(log_peak)
 
-      year_indexes <- df$year_index - anchor_index
+      # n_years   = n_row embeds an extra index to obtain the baseline titre for
+      #   a subsequent infection
 
-      year_indexes <- c(year_indexes, max(year_indexes) + 1)
+      titre <- simulate_antibody_titres(n_years   = n_row,
+                                        A0        = A0,
+                                        par_rho   = 0.98,
+                                        par_sigma = short_rate,
+                                        gamma_t   = long_rates)
 
-      t_indexes    <- year_indexes * 360
-
-      titre        <- bi_exponential_decay(t          = t_indexes,
-                                           A0         = exp(log_peak),
-                                           par_sigma  = short_rate,
-                                           par_gamma = long_rate,
-                                           par_rho    = 0.98)
       baseline_titre <- log(titre[length(titre)])
 
       log_titre    <- log(titre[-length(titre)])
@@ -109,6 +118,19 @@ bi_exponential_decay <- function(t, A0, par_sigma, par_gamma, par_rho)
           (1 - par_rho) * exp(-par_gamma * t))
 }
 
+
+bi_exponential_step <- function(A0, par_sigma, par_gamma, par_rho)
+{
+  short_dyn <-  A0 * par_rho * exp(-par_sigma * 360)
+
+  long_dyn  <- A0 * (1 - par_rho) * exp(-par_gamma * 360)
+
+  A <- short_dyn + long_dyn
+
+  list(A       = A,
+       new_rho = short_dyn / A)
+}
+
 estimate_short_rate <- function(rise, short_options) {
 
   short_options$intercept + short_options$slope * rise
@@ -119,6 +141,7 @@ estimate_rise <- function(baseline_titre, rise_options) {
   max(0, rise_options$intercept + rise_options$slope * max(0, baseline_titre))
 }
 
+# Assumes the gamma = f(age), where f is a logistic function
 estimate_long_rate <- function(age, long_options)
 {
   L <- long_options$L
@@ -128,4 +151,25 @@ estimate_long_rate <- function(age, long_options)
   L / (1 + exp(-a * (age - b)))
 }
 
+simulate_antibody_titres <- function(n_years, A0, par_rho,
+                                     par_sigma,
+                                     gamma_t) {
+  A <- numeric(n_years + 1)
+  A[1] <- A0
 
+  for (j in seq_len(n_years)) {
+
+    par_gamma <- gamma_t[j]
+
+    output <- bi_exponential_step(
+      A0         = A[j],
+      par_sigma  = par_sigma,
+      par_gamma  = par_gamma,
+      par_rho    = par_rho)
+
+    A[j + 1] <- output$A
+    par_rho  <- output$new_rho
+  }
+
+  A
+}
